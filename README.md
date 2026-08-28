@@ -19,35 +19,6 @@ A CS Frotas gerencia um volume massivo de manutenções preventivas e corretivas
 
 ---
 
-## 🏗️ Arquitetura da Solução
-
-```mermaid
-flowchart TD
-    subgraph Ingestao ["1. Ingestão & Sanitização"]
-        A1[Relatório VETOR .xlsx\n249k linhas] --> B1[Script Python Ingestão\nSanitização + Tipagem + Regras]
-        A2[Estoque SAP MB52 .xlsx\n2.09M linhas] --> B1
-        A3[Dicionários de Metadados] --> B1
-    end
-
-    subgraph DataWarehouse ["2. Google BigQuery (`cs_frotas_data`)"]
-        B1 --> C1[(relatorio_item_vetor)]
-        B1 --> C2[(relatorio_estoque_sap_mb52)]
-        B1 --> C3[(dicionario_dados_vetor)]
-        B1 --> C4[(dicionario_dados_sap)]
-    end
-
-    subgraph AnaliseML ["3. BigQuery ML & Vertex AI"]
-        C1 & C2 --> D1[tb_depara_vetor_sap_gemini\nDe-Para Semântico com Hash]
-        C1 & C2 --> D2[vw_cruzamento_vetor_sap\nVisão de Divergências]
-        D1 & D2 --> D3[Gemini Flash 1.5\nAuditoria de Sobrepreço & Pareceres]
-    end
-
-    subgraph Interface ["4. Nexus Data Agent (Web App)"]
-        D3 & C1 & C2 --> E1[Backend FastAPI\nGemini Data Analytics API]
-        E1 --> E2[Frontend Responsivo\nStreaming + Markdown + Vega-Lite Charts]
-    end
-```
-
 ## 📊 Estrutura dos Dados no BigQuery
  
 Dataset: `cs_frotas_data` no seu projeto GCP (`PROJECT_ID`).
