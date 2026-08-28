@@ -53,11 +53,9 @@ flowchart TD
     end
 ```
 
----
-
 ## 📊 Estrutura dos Dados no BigQuery
-
-Dataset: `cs_frotas_data` no projeto `taskflow-lulu-2026` (ou `cs-demo-2026`).
+ 
+Dataset: `cs_frotas_data` no seu projeto GCP (`PROJECT_ID`).
 
 | Tabela / View | Descrição | Volume | Colunas Principais |
 | :--- | :--- | :---: | :--- |

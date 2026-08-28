@@ -1,7 +1,7 @@
 -- ====================================================================
 -- Script: Correlacionar Peças/Produtos VETOR x SAP com Gemini (BigQuery ML)
 -- Otimização: Desduplicação de catálogos para redução de custos e quotas
--- Projeto: cs-demo-2026
+-- Projeto: your-gcp-project-id
 -- Dataset: cs_frotas_data
 -- ====================================================================
 

@@ -1,6 +1,6 @@
 -- ====================================================================
 -- Script: Cruzamento de Estoque e Valores VETOR x SAP (MB52)
--- Projeto: cs-demo-2026
+-- Projeto: your-gcp-project-id
 -- Dataset: cs_frotas_data
 -- ====================================================================
 

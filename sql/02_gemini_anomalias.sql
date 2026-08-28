@@ -1,6 +1,6 @@
 -- ====================================================================
 -- Script: Modelo Gemini no BigQuery ML para Análise de Sobrepreço/Anomalias
--- Projeto: cs-demo-2026
+-- Projeto: your-gcp-project-id
 -- Dataset: cs_frotas_data
 -- ====================================================================
 
