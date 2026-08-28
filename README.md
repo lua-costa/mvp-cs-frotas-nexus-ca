@@ -135,26 +135,48 @@ Para evitar estourar cotas e custos ao cruzar 249k linhas do Vetor com 2.09M do 
 
 ---
 
-### 2. Configurar o Ambiente no GCP
-Execute o script de inicialização para habilitar APIs e criar o dataset:
+### 2. Configurar o Ambiente no GCP (BigQuery, Vertex AI e Cloud Storage)
+Execute o script de inicialização para habilitar as APIs, criar o dataset no BigQuery e o bucket no Google Cloud Storage:
 
 ```bash
 chmod +x scripts/01_setup_gcp_environment.sh
-./scripts/01_setup_gcp_environment.sh "SEU_PROJETO_GCP" "US"
+./scripts/01_setup_gcp_environment.sh "SEU_PROJETO_GCP" "US" "SEU_BUCKET_GCS"
 ```
 
 ---
 
-### 3. Ingestão e Sanitização das Bases
-Instale as dependências e execute o pipeline de ingestão:
+### 3. Ingestão e Sanitização das Bases (Via Google Cloud Storage ou Local)
+
+#### Opção A: Ingestão Direta a partir do Google Cloud Storage (Recomendado)
+Faça o upload das planilhas para o bucket criado no Cloud Storage:
 
 ```bash
-pip install -r requirements.txt
+# 1. Enviar os arquivos para o Cloud Storage
+gcloud storage cp "caminho/para/Manutenção - Relatório de Item VETOR.xlsx" gs://SEU_BUCKET_GCS/
+gcloud storage cp "caminho/para/Manutenção - Relatório de Estoque SAP.xlsx" gs://SEU_BUCKET_GCS/
 
+# 2. Executar a ingestão apontando para o Cloud Storage
 export GCP_PROJECT_ID="SEU_PROJETO_GCP"
 export BQ_DATASET_ID="cs_frotas_data"
-export FILE_VETOR="/caminho/para/Manutenção - Relatório de Item VETOR.xlsx"
-export FILE_SAP="/caminho/para/Manutenção - Relatório de Estoque SAP.xlsx"
+export GCS_BUCKET="SEU_BUCKET_GCS"
+
+python3 scripts/ingest_excel_to_bigquery.py
+```
+
+*Também é possível passar URIs customizadas no GCS via variáveis de ambiente:*
+```bash
+export GCS_VETOR_URI="gs://SEU_BUCKET_GCS/pastas/Manutenção - Relatório de Item VETOR.xlsx"
+export GCS_SAP_URI="gs://SEU_BUCKET_GCS/pastas/Manutenção - Relatório de Estoque SAP.xlsx"
+```
+
+#### Opção B: Ingestão Local
+Se preferir executar a partir do disco local:
+
+```bash
+export GCP_PROJECT_ID="SEU_PROJETO_GCP"
+export BQ_DATASET_ID="cs_frotas_data"
+export FILE_VETOR="data/Manutenção - Relatório de Item VETOR.xlsx"
+export FILE_SAP="data/Manutenção - Relatório de Estoque SAP.xlsx"
 
 python3 scripts/ingest_excel_to_bigquery.py
 ```
