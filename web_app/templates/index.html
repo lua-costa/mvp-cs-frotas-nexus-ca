@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Nexus — Agente de Inteligência Logística (CS Frotas)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Montserrat:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Marked.js para renderizar Markdown -->
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <!-- Vega e Vega-Lite para renderizar gráficos interativos idênticos ao BigQuery -->
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <style>
+    :root {
+      --cs-navy: #0b1e38;
+      --cs-navy-surface: #14284b;
+      --cs-navy-card: #1c335e;
+      --cs-orange: #ff7900;
+      --cs-orange-hover: #e06600;
+      --cs-green: #00a859;
+      --cs-border: #234175;
+      --text-main: #f8fafc;
+      --text-muted: #a0aec0;
+      --code-bg: #071224;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background-color: var(--cs-navy);
+      background-image: radial-gradient(circle at 15% 15%, rgba(255, 121, 0, 0.08) 0%, transparent 45%),
+                        radial-gradient(circle at 85% 85%, rgba(0, 168, 89, 0.08) 0%, transparent 45%);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      min-height: -webkit-fill-available;
+      padding: 1rem;
+    }
+
+    /* Modal de Autenticação */
+    .auth-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(11, 30, 56, 0.94);
+      backdrop-filter: blur(8px);
+      z-index: 9999;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 1.5rem;
+    }
+
+    .auth-card {
+      background: var(--cs-navy-surface);
+      border: 1px solid var(--cs-border);
+      border-radius: 20px;
+      padding: 2.5rem;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 121, 0, 0.2);
+      text-align: center;
+    }
+
+    .auth-logo {
+      display: inline-flex;
+      background: linear-gradient(135deg, var(--cs-orange) 0%, #ff9838 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.5rem;
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 1.25rem;
+      box-shadow: 0 6px 16px rgba(255, 121, 0, 0.35);
+    }
+
+    .auth-card h3 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.35rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    .auth-card p {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 1.75rem;
+      line-height: 1.4;
+    }
+
+    .auth-input {
+      width: 100%;
+      background: var(--code-bg);
+      border: 1px solid var(--cs-border);
+      color: var(--text-main);
+      padding: 0.9rem 1.2rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 1rem;
+      text-align: center;
+      letter-spacing: 2px;
+      transition: all 0.2s ease;
+    }
+
+    .auth-input:focus {
+      border-color: var(--cs-orange);
+      box-shadow: 0 0 0 3px rgba(255, 121, 0, 0.2);
+    }
+
+    .auth-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--cs-orange) 0%, #e06600 100%);
+      color: white;
+      border: none;
+      padding: 0.9rem 1.2rem;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 14px rgba(255, 121, 0, 0.3);
+    }
+
+    .auth-btn:hover {
+      background: linear-gradient(135deg, #ff8c1a 0%, #cc5c00 100%);
+      transform: translateY(-1px);
+    }
+
+    .auth-error {
+      color: #ff6b6b;
+      font-size: 0.85rem;
+      margin-top: 0.85rem;
+      display: none;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 1100px;
+      height: 94vh;
+      background-color: var(--cs-navy-surface);
+      border-radius: 18px;
+      border: 1px solid var(--cs-border);
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 60px -15px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 121, 0, 0.15);
+      overflow: hidden;
+      position: relative;
+    }
+
+    /* Header */
+    .chat-header {
+      padding: 1.25rem 2rem;
+      background: linear-gradient(180deg, rgba(20, 40, 75, 0.95) 0%, rgba(15, 32, 60, 0.95) 100%);
+      border-bottom: 1px solid var(--cs-border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 1.1rem;
+    }
+
+    .brand-logo-badge {
+      background: linear-gradient(135deg, var(--cs-orange) 0%, #ff9838 100%);
+      color: #fff;
+      font-family: 'Montserrat', sans-serif;
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: 0.5px;
+      width: 44px;
+      height: 44px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(255, 121, 0, 0.35);
+    }
+
+    .header-info h2 {
+      font-family: 'Montserrat', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .header-info p {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+    }
+
+    .header-status {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      background: rgba(0, 168, 89, 0.12);
+      border: 1px solid rgba(0, 168, 89, 0.35);
+      padding: 0.45rem 0.9rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: #34d399;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #10b981;
+      border-radius: 50%;
+      box-shadow: 0 0 8px #10b981;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); opacity: 0.8; }
+      50% { transform: scale(1.2); opacity: 1; }
+      100% { transform: scale(0.95); opacity: 0.8; }
+    }
+
+    /* Área de mensagens */
+    .chat-messages {
+      flex: 1;
+      padding: 1.75rem 2rem;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 1.5rem;
+      background: radial-gradient(circle at 50% 50%, rgba(20, 40, 75, 0.4) 0%, rgba(11, 30, 56, 0.7) 100%);
+    }
+
+    .chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+    .chat-messages::-webkit-scrollbar-thumb {
+      background: var(--cs-border);
+      border-radius: 4px;
+    }
+
+    .message {
+      display: flex;
+      max-width: 90%;
+      animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .message.user {
+      align-self: flex-end;
+    }
+
+    .message.user .bubble {
+      background: linear-gradient(135deg, var(--cs-orange) 0%, #e06600 100%);
+      color: #ffffff;
+      border-radius: 18px 18px 2px 18px;
+      box-shadow: 0 6px 18px rgba(255, 121, 0, 0.25);
+    }
+
+    .message.bot {
+      align-self: flex-start;
+    }
+
+    .message.bot .bubble {
+      background: var(--cs-navy-card);
+      border: 1px solid var(--cs-border);
+      color: var(--text-main);
+      border-radius: 18px 18px 18px 2px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    .bubble {
+      padding: 1.2rem 1.4rem;
+      font-size: 0.95rem;
+      line-height: 1.6;
+      word-break: break-word;
+      width: 100%;
+    }
+
+    /* Container de Scroll Horizontal para Tabelas */
+    .table-responsive-wrapper {
+      width: 100%;
+      overflow-x: auto;
+      margin: 1.25rem 0;
+      border-radius: 10px;
+      border: 1px solid var(--cs-border);
+      background: var(--code-bg);
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .table-responsive-wrapper::-webkit-scrollbar {
+      height: 6px;
+    }
+    .table-responsive-wrapper::-webkit-scrollbar-thumb {
+      background: var(--cs-border);
+      border-radius: 3px;
+    }
+
+    /* Tabelas Markdown */
+    .bubble table {
+      width: 100%;
+      min-width: 500px;
+      border-collapse: collapse;
+      font-size: 0.88rem;
+    }
+
+    .bubble th, .bubble td {
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 0.65rem 0.9rem;
+      text-align: left;
+      white-space: nowrap;
+    }
+
+    .bubble th {
+      background: rgba(255, 121, 0, 0.15);
+      color: var(--cs-orange);
+      font-weight: 600;
+    }
+
+    .bubble tr:nth-child(even) {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .bubble ul, .bubble ol {
+      margin-left: 1.4rem;
+      margin-top: 0.5rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .bubble li {
+      margin-bottom: 0.35rem;
+    }
+
+    .bubble p {
+      margin-bottom: 0.65rem;
+    }
+    .bubble p:last-child {
+      margin-bottom: 0;
+    }
+
+    /* Gráfico Vega-Lite */
+    .chart-box {
+      margin-top: 1.25rem;
+      margin-bottom: 1.25rem;
+      background: var(--code-bg);
+      border: 1px solid var(--cs-border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      box-shadow: inset 0 2px 6px rgba(0,0,0,0.4);
+      width: 100%;
+      overflow: hidden;
+    }
+
+    .chart-box h4 {
+      font-size: 0.85rem;
+      color: var(--cs-orange);
+      margin-bottom: 0.85rem;
+      font-family: 'Montserrat', sans-serif;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .chart-render {
+      width: 100%;
+      min-height: 280px;
+      overflow-x: auto;
+      overflow-y: hidden;
+      display: flex;
+      justify-content: center;
+    }
+
+    .chart-render canvas, .chart-render svg {
+      max-width: 100% !important;
+      height: auto !important;
+    }
+
+    /* Perguntas sugeridas */
+    .followups-box {
+      margin-top: 1.2rem;
+      padding-top: 1rem;
+      border-top: 1px dashed var(--cs-border);
+    }
+
+    .followups-box h5 {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-bottom: 0.6rem;
+      font-weight: 500;
+    }
+
+    .followup-chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    .followup-chip {
+      background: rgba(255, 121, 0, 0.12);
+      border: 1px solid rgba(255, 121, 0, 0.3);
+      color: #ffaa5a;
+      padding: 0.45rem 0.85rem;
+      border-radius: 16px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .followup-chip:hover {
+      background: var(--cs-orange);
+      color: #fff;
+      transform: translateY(-1px);
+    }
+
+    /* Input Footer */
+    .chat-input-area {
+      padding: 1.25rem 2rem;
+      background: var(--cs-navy-surface);
+      border-top: 1px solid var(--cs-border);
+      display: flex;
+      gap: 0.85rem;
+      align-items: center;
+    }
+
+    .chat-input-area input {
+      flex: 1;
+      background: var(--code-bg);
+      border: 1px solid var(--cs-border);
+      border-radius: 12px;
+      padding: 0.95rem 1.25rem;
+      color: var(--text-main);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .chat-input-area input:focus {
+      border-color: var(--cs-orange);
+      box-shadow: 0 0 0 3px rgba(255, 121, 0, 0.2);
+    }
+
+    .btn-send {
+      background: linear-gradient(135deg, var(--cs-orange) 0%, #e06600 100%);
+      border: none;
+      border-radius: 12px;
+      padding: 0.95rem 1.6rem;
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      box-shadow: 0 4px 14px rgba(255, 121, 0, 0.3);
+    }
+
+    .btn-send:hover {
+      background: linear-gradient(135deg, #ff8c1a 0%, #cc5c00 100%);
+      transform: translateY(-1px);
+    }
+
+    .btn-send:active {
+      transform: translateY(1px);
+    }
+
+    /* =========================================
+       RESPONSIVIDADE MOBILE & TABLET
+    ========================================= */
+    @media (max-width: 768px) {
+      body {
+        padding: 0;
+      }
+
+      .chat-container {
+        height: 100vh;
+        max-width: 100%;
+        border-radius: 0;
+        border: none;
+      }
+
+      .chat-header {
+        padding: 1rem 1.2rem;
+      }
+
+      .header-info h2 {
+        font-size: 1rem;
+      }
+
+      .header-info p {
+        font-size: 0.75rem;
+      }
+
+      .header-status span {
+        display: none;
+      }
+
+      .header-status {
+        padding: 0.4rem 0.6rem;
+      }
+
+      .chat-messages {
+        padding: 1rem 0.85rem;
+        gap: 1rem;
+      }
+
+      .message {
+        max-width: 100%;
+      }
+
+      .message.user {
+        max-width: 90%;
+      }
+
+      .bubble {
+        padding: 0.9rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .chart-box {
+        padding: 0.85rem 0.6rem;
+      }
+
+      .chat-input-area {
+        padding: 0.85rem 1rem;
+      }
+
+      .btn-send {
+        padding: 0.85rem 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Modal de Bloqueio por Senha -->
+  <div class="auth-overlay" id="authModal">
+    <div class="auth-card">
+      <div class="auth-logo">CS</div>
+      <h3>Nexus Analytics</h3>
+      <p>Acesso restrito ao MVP de Inteligência Logística da CS Frotas. Digite a chave de acesso.</p>
+      <input type="password" class="auth-input" id="accessKeyInput" placeholder="Chave de Acesso" onkeydown="if(event.key==='Enter') submitKey()">
+      <button class="auth-btn" onclick="submitKey()">Entrar no Sistema</button>
+      <div class="auth-error" id="authError">❌ Chave de acesso incorreta.</div>
+    </div>
+  </div>
+
+  <div class="chat-container">
+    <!-- Header -->
+    <div class="chat-header">
+      <div class="header-brand">
+        <div class="brand-logo-badge">CS</div>
+        <div class="header-info">
+          <h2>Nexus — Agente de Inteligência Logística</h2>
+          <p>Conversational Analytics - MVP CS Frotas</p>
+        </div>
+      </div>
+      <div class="header-status">
+        <div class="status-dot"></div>
+        <span>BigQuery Online</span>
+      </div>
+    </div>
+
+    <!-- Mensagens -->
+    <div class="chat-messages" id="chatBox">
+      <div class="message bot">
+        <div class="bubble">
+          Olá! Sou o <strong>Nexus</strong>, Agente de Inteligência Logística e Suprimentos da CS Frotas. 🚗<br><br>
+          Estou conectado a suas bases de dados, como posso te ajudar?
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chat-input-area">
+      <input type="text" id="userInput" placeholder="Envie sua pergunta" onkeydown="if(event.key === 'Enter') sendMessage()">
+      <button class="btn-send" onclick="sendMessage()">Enviar</button>
+    </div>
+  </div>
+
+  <script>
+    let currentAccessKey = localStorage.getItem('nexus_key') || '';
+
+    // Verifica se já possui chave válida salva
+    if (currentAccessKey) {
+      verifyStoredKey(currentAccessKey);
+    }
+
+    async function verifyStoredKey(key) {
+      try {
+        const resp = await fetch('/api/verify-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+        if (resp.ok) {
+          document.getElementById('authModal').style.display = 'none';
+        } else {
+          localStorage.removeItem('nexus_key');
+          currentAccessKey = '';
+          document.getElementById('authModal').style.display = 'flex';
+        }
+      } catch (e) {
+        document.getElementById('authModal').style.display = 'flex';
+      }
+    }
+
+    async function submitKey() {
+      const input = document.getElementById('accessKeyInput');
+      const errEl = document.getElementById('authError');
+      const key = input.value.trim();
+
+      if (!key) return;
+
+      try {
+        const resp = await fetch('/api/verify-key', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ key })
+        });
+
+        if (resp.ok) {
+          currentAccessKey = key;
+          localStorage.setItem('nexus_key', key);
+          document.getElementById('authModal').style.display = 'none';
+        } else {
+          errEl.style.display = 'block';
+          input.value = '';
+          input.focus();
+        }
+      } catch (e) {
+        errEl.innerText = '❌ Erro ao validar a chave no servidor.';
+        errEl.style.display = 'block';
+      }
+    }
+
+    function renderMarkdown(content) {
+      if (!content) return '';
+      const rawHtml = marked.parse(content);
+      // Envolve todas as <table> geradas pelo marked em um wrapper responsivo
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = rawHtml;
+      const tables = tempDiv.querySelectorAll('table');
+      tables.forEach(tbl => {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'table-responsive-wrapper';
+        tbl.parentNode.insertBefore(wrapper, tbl);
+        wrapper.appendChild(tbl);
+      });
+      return tempDiv.innerHTML;
+    }
+
+    const activeChartViews = [];
+
+    // Redimensiona todos os gráficos ao redimensionar a janela
+    window.addEventListener('resize', () => {
+      activeChartViews.forEach(({ elemId, spec }) => {
+        vegaEmbed(elemId, spec, { actions: false, theme: 'dark' }).catch(() => {});
+      });
+    });
+
+    async function sendMessage(suggestedText) {
+      const input = document.getElementById('userInput');
+      const text = suggestedText || input.value.trim();
+      if (!text) return;
+
+      appendMessage(text, 'user');
+      input.value = '';
+
+      const loadingId = appendLoading();
+
+      try {
+        const response = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message: text, access_key: currentAccessKey })
+        });
+
+        const data = await response.json();
+        removeLoading(loadingId);
+
+        if (response.status === 401) {
+          document.getElementById('authModal').style.display = 'flex';
+          localStorage.removeItem('nexus_key');
+          appendSimpleBotMessage('🔒 Sessão inválida ou chave incorreta. Por favor, faça login novamente.');
+          return;
+        }
+
+        appendBotMessage(data);
+      } catch (err) {
+        removeLoading(loadingId);
+        appendSimpleBotMessage('❌ Ocorreu um erro ao comunicar com o servidor.');
+      }
+    }
+
+    function appendMessage(text, sender) {
+      const chatBox = document.getElementById('chatBox');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = `message ${sender}`;
+      msgDiv.innerHTML = `<div class="bubble">${text}</div>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendSimpleBotMessage(text) {
+      const chatBox = document.getElementById('chatBox');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message bot';
+      msgDiv.innerHTML = `<div class="bubble">${renderMarkdown(text)}</div>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendBotMessage(data) {
+      const chatBox = document.getElementById('chatBox');
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message bot';
+
+      const uniqueMsgId = 'msg-' + Date.now();
+      
+      // 1. Introdução / Síntese inicial
+      let introHtml = data.intro ? renderMarkdown(data.intro) : '';
+
+      // 2. Tabela de Dados (se houver)
+      let tableHtml = data.tables ? renderMarkdown(data.tables) : '';
+
+      // 3. Gráficos (Aparecem logo após a tabela se existirem)
+      let chartsContainerHtml = '';
+      if (data.charts && data.charts.length > 0) {
+        data.charts.forEach((_, idx) => {
+          chartsContainerHtml += `
+            <div class="chart-box">
+              <h4>📊 Visualização Analítica</h4>
+              <div id="${uniqueMsgId}-chart-${idx}" class="chart-render"></div>
+            </div>
+          `;
+        });
+      }
+
+      // 4. Insights, Diagnósticos e Recomendações pós-gráfico
+      let insightsHtml = data.insights ? renderMarkdown(data.insights) : '';
+
+      // 5. Perguntas Sugeridas (Rodapé da resposta, clicáveis)
+      let followupsHtml = '';
+      if (data.followups && data.followups.length > 0) {
+        followupsHtml = `
+          <div class="followups-box">
+            <h5>💡 Perguntas Sugeridas pelo Nexus:</h5>
+            <div class="followup-chips">
+              ${data.followups.map(q => `<div class="followup-chip" onclick="sendMessage('${q.replace(/'/g, "\\'")}')">${q}</div>`).join('')}
+            </div>
+          </div>
+        `;
+      }
+
+      // Ordem: Intro -> Tabela -> Gráficos -> Insights e Otimizações -> Perguntas Sugeridas
+      msgDiv.innerHTML = `<div class="bubble">${introHtml}${tableHtml}${chartsContainerHtml}${insightsHtml}${followupsHtml}</div>`;
+      chatBox.appendChild(msgDiv);
+
+      // Renderizar gráficos Vega
+      if (data.charts && data.charts.length > 0) {
+        data.charts.forEach((chartSpec, idx) => {
+          const targetElemId = `#${uniqueMsgId}-chart-${idx}`;
+          activeChartViews.push({ elemId: targetElemId, spec: chartSpec });
+          vegaEmbed(targetElemId, chartSpec, { actions: false, theme: 'dark' }).catch(console.error);
+        });
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function appendLoading() {
+      const chatBox = document.getElementById('chatBox');
+      const id = 'loading-' + Date.now();
+      const msgDiv = document.createElement('div');
+      msgDiv.className = 'message bot';
+      msgDiv.id = id;
+      msgDiv.innerHTML = `<div class="bubble">⏳ <em>Nexus está consultando a base de dados...</em></div>`;
+      chatBox.appendChild(msgDiv);
+      chatBox.scrollTop = chatBox.scrollHeight;
+      return id;
+    }
+
+    function removeLoading(id) {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    }
+  </script>
+</body>
+</html>
