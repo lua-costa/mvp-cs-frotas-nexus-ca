@@ -7,7 +7,7 @@
 -- 1. Criação do Modelo Gemini Remoto no BigQuery ML
 CREATE OR REPLACE MODEL `cs_frotas_data.gemini_flash_model`
 REMOTE WITH CONNECTION DEFAULT
-OPTIONS(endpoint = 'https://aiplatform.googleapis.com/v1/projects/dacommunitybr/locations/global/publishers/google/models/gemini-3.7-flash');
+OPTIONS(endpoint = 'https://aiplatform.googleapis.com/v1/projects/your-gcp-project-id/locations/global/publishers/google/models/gemini-3.7-flash');
 
 -- 2. Exemplo de Prompt para Identificação de Divergências de Peças/Valores com AI
 SELECT
