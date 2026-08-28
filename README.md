@@ -181,10 +181,25 @@ export FILE_SAP="data/Manutenção - Relatório de Estoque SAP.xlsx"
 python3 scripts/ingest_excel_to_bigquery.py
 ```
 
+### 4. Execução Interativa no BigQuery Studio / BigQuery Notebooks
+
+Você pode executar todo o pipeline Python e SQL diretamente no **[BigQuery Studio (Notebooks no BigQuery)](https://docs.cloud.google.com/bigquery/docs/create-notebooks?hl=pt)**, integrado com o Colab Enterprise:
+
+1. **Acesse o Console do BigQuery**:
+   - No Google Cloud Console, navegue até **BigQuery** > **BigQuery Studio**.
+2. **Criar ou Importar Notebook**:
+   - Clique em **+ (Criar)** > **Notebook Python** ou faça o upload do arquivo `notebooks/pipeline_cs_frotas_bigquery.ipynb`.
+   - Conecte a um runtime do BigQuery Studio / Colab Enterprise (as credenciais IAM do GCP são injetadas automaticamente na sessão).
+3. **Execução das Células**:
+   - O notebook realiza o download por streaming direto dos buckets no Google Cloud Storage (`gs://...`).
+   - Aplica a sanitização e regras de negócio com Pandas.
+   - Escreve as tabelas nativas no BigQuery.
+   - Executa consultas SQL analíticas e inferências com o modelo **Gemini 1.5 Flash** via `%%bigquery` magic.
+
 ---
 
-### 4. Criação dos Modelos de IA e Consultas SQL no BigQuery
-Execute os scripts SQL pelo BigQuery Console ou via CLI:
+### 5. Criação dos Modelos de IA e Consultas SQL no BigQuery (Console ou CLI)
+Se preferir executar os scripts SQL diretamente pelo BigQuery Console ou via CLI `bq`:
 
 ```bash
 # 1. View de cruzamento inicial
@@ -199,7 +214,7 @@ bq query --use_legacy_sql=false < sql/03_correlacao_gemini.sql
 
 ---
 
-### 5. Executando o Web App Localmente
+### 6. Executando o Web App Localmente
 
 ```bash
 cd web_app
@@ -217,7 +232,7 @@ Acesse no navegador: `http://localhost:8080`
 
 ---
 
-### 6. Deploy no Google Cloud Run (Serverless)
+### 7. Deploy no Google Cloud Run (Serverless)
 
 Para publicar a aplicação em produção no Cloud Run:
 
