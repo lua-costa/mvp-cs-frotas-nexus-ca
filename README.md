@@ -1,10 +1,5 @@
 # 🚗 CS Frotas — Nexus CA (MVP de Inteligência de Frotas & Auditoria com Gemini)
 
-[![Google Cloud](https://img.shields.io/badge/Google_Cloud-BigQuery_%7C_Vertex_AI-4285F4?logo=google-cloud&logoColor=white)](https://cloud.google.com/)
-[![Gemini](https://img.shields.io/badge/Gemini_1.5-Flash_%7C_Pro-8E75B2?logo=google-gemini&logoColor=white)](https://deepmind.google/technologies/gemini/)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
-[![Vega-Lite](https://img.shields.io/badge/Vega--Lite-Interactive_Charts-FF7900)](https://vega.github.io/vega-lite/)
-
 O **Nexus CA** é uma plataforma analítica e agente inteligente desenvolvido para a **CS Frotas**, combinando a escalabilidade do **Google BigQuery**, a capacidade cognitiva dos modelos **Gemini (Vertex AI / BigQuery ML)** e uma interface interativa moderna para auditoria de manutenção, reconciliação de catálogos e gestão de **Cobrança de Avarias (CA)**.
 
 ---
@@ -190,7 +185,7 @@ Você pode executar todo o pipeline Python e SQL diretamente no **[BigQuery Stud
    - O notebook realiza o download por streaming direto dos buckets no Google Cloud Storage (`gs://...`).
    - Aplica a sanitização e regras de negócio com Pandas.
    - Escreve as tabelas nativas no BigQuery.
-   - Executa consultas SQL analíticas e inferências com o modelo **Gemini 3.7 Flash** via `%%bigquery` magic.
+   - Executa consultas SQL analíticas e inferências com o modelo **Gemini 3.7 Flash** via `%%bigquery`.
 
 ---
 
