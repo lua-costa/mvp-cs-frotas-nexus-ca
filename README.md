@@ -98,8 +98,6 @@ Para evitar estourar cotas e custos ao cruzar 249k linhas do Vetor com 2.09M do 
 ├── README.md                           # Documentação completa do projeto
 ├── Dockerfile                          # Build da aplicação Web para Cloud Run
 ├── requirements.txt                    # Dependências principais
-├── policy_allow_project.yaml           # Políticas IAM e acesso GCP
-│
 ├── scripts/
 │   ├── 01_setup_gcp_environment.sh     # Script Bash de ativação de APIs e Dataset
 │   └── ingest_excel_to_bigquery.py     # Pipeline de ingestão, sanitização e carga BigQuery
@@ -194,7 +192,7 @@ Você pode executar todo o pipeline Python e SQL diretamente no **[BigQuery Stud
    - O notebook realiza o download por streaming direto dos buckets no Google Cloud Storage (`gs://...`).
    - Aplica a sanitização e regras de negócio com Pandas.
    - Escreve as tabelas nativas no BigQuery.
-   - Executa consultas SQL analíticas e inferências com o modelo **Gemini 1.5 Flash** via `%%bigquery` magic.
+   - Executa consultas SQL analíticas e inferências com o modelo **Gemini 3.7 Flash** via `%%bigquery` magic.
 
 ---
 

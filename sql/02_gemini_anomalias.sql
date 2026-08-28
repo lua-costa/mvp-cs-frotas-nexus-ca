@@ -5,9 +5,9 @@
 -- ====================================================================
 
 -- 1. Criação do Modelo Gemini Remoto no BigQuery ML
-CREATE OR REPLACE MODEL `cs-demo-2026.cs_frotas_data.gemini_flash_model`
+CREATE OR REPLACE MODEL `cs_frotas_data.gemini_flash_model`
 REMOTE WITH CONNECTION DEFAULT
-OPTIONS(endpoint = 'gemini-1.5-flash');
+OPTIONS(endpoint = 'https://aiplatform.googleapis.com/v1/projects/dacommunitybr/locations/global/publishers/google/models/gemini-3.7-flash');
 
 -- 2. Exemplo de Prompt para Identificação de Divergências de Peças/Valores com AI
 SELECT
@@ -18,7 +18,7 @@ SELECT
   valor_total_sap
 FROM
   ML.GENERATE_TEXT(
-    MODEL `cs-demo-2026.cs_frotas_data.gemini_flash_model`,
+    MODEL `cs_frotas_data.gemini_flash_model`,
     (
       SELECT
         CONCAT(
@@ -32,7 +32,7 @@ FROM
         descricao_vetor,
         valor_total_vetor,
         valor_total_sap
-      FROM `cs-demo-2026.cs_frotas_data.vw_cruzamento_vetor_sap`
+      FROM `cs_frotas_data.vw_cruzamento_vetor_sap`
       WHERE status_divergencia = 'Divergência Relevante'
       LIMIT 10
     ),

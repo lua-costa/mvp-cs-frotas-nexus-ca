@@ -5,7 +5,7 @@
 -- ====================================================================
 
 -- Visão Consolidada de Peças e Valores entre Vetor e SAP MB52
-CREATE OR REPLACE VIEW `cs-demo-2026.cs_frotas_data.vw_cruzamento_vetor_sap` AS
+CREATE OR REPLACE VIEW `cs_frotas_data.vw_cruzamento_vetor_sap` AS
 SELECT
   v.`código_item_vetor` AS codigo_item_vetor,
   v.`código_item_sap` AS codigo_item_sap_ref,
@@ -29,6 +29,6 @@ SELECT
     ELSE 'Consistente'
   END AS status_divergencia
 
-FROM `cs-demo-2026.cs_frotas_data.relatorio_item_vetor` v
-FULL OUTER JOIN `cs-demo-2026.cs_frotas_data.relatorio_estoque_sap_mb52` s
+FROM `cs_frotas_data.relatorio_item_vetor` v
+FULL OUTER JOIN `cs_frotas_data.relatorio_estoque_sap_mb52` s
   ON v.`código_item_sap` = s.material;
