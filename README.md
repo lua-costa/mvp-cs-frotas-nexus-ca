@@ -62,6 +62,8 @@ Para evitar estourar cotas e custos ao cruzar 249k linhas do Vetor com 2.09M do 
 ├── README.md                           # Documentação completa do projeto
 ├── Dockerfile                          # Build da aplicação Web para Cloud Run
 ├── requirements.txt                    # Dependências principais
+├── docs/
+│   └── agente_conversacional_bigquery.md # Modelo e Prompt de criação do Agente no BigQuery
 ├── scripts/
 │   ├── 01_setup_gcp_environment.sh     # Script Bash de ativação de APIs e Dataset
 │   └── ingest_excel_to_bigquery.py     # Pipeline de ingestão, sanitização e carga BigQuery
